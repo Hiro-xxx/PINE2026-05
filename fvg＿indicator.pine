@@ -1,0 +1,26 @@
+//@version=6 
+indicator("FVG インジケーター（上位足対応）", overlay=true, max_bars_back=500) 
+tf          = input.timeframe("60", title="上位足の時間足") 
+showBullFVG = input.bool(true,      title="強気FVGを表示") 
+showBearFVG = input.bool(true,      title="弱気FVGを表示") 
+bullColor   = input.color(color.new(color.green, 70), title="強気色") 
+bearColor   = input.color(color.new(color.red, 70),   title="弱気色") 
+fvgMinSize  = input.float(0.0, title="最小サイズ", minval=0) 
+[htfHigh, htfLow, htfClose] = request.security(syminfo.tickerid, tf, 
+    [high, low, close], lookahead=barmerge.lookahead_off) 
+bullFVG = htfLow > htfHigh[2]  and (htfLow - htfHigh[2])  >= fvgMinSize 
+bearFVG = htfHigh < htfLow[2]  and (htfLow[2]  - htfHigh) >= fvgMinSize 
+var array<box> bullBoxes = array.new<box>() 
+var array<box> bearBoxes = array.new<box>() 
+if bullFVG and showBullFVG 
+    b = box.new(bar_index[1], htfLow, bar_index + 20, htfHigh[2], 
+                border_color=bullColor, bgcolor=bullColor, border_width=1) 
+    array.push(bullBoxes, b) 
+    label.new(bar_index, htfLow, "↑FVG", color=color.green, 
+              textcolor=color.white, style=label.style_label_up, size=size.small) 
+if bearFVG and showBearFVG 
+    b = box.new(bar_index[1], htfLow[2], bar_index + 20, htfHigh, 
+                border_color=bearColor, bgcolor=bearColor, border_width=1) 
+    array.push(bearBoxes, b) 
+    label.new(bar_index, htfHigh, "↓FVG", color=color.red, 
+              textcolor=color.white, style=label.style_label_down, size=size.small) 
