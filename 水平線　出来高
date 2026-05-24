@@ -1,0 +1,30 @@
+lookback   = input.int(20, title="水平線参照期間", minval=5) 
+lineWidth  = input.int(2,  title="線の太さ") 
+highColor  = input.color(color.red,  title="高値色") 
+lowColor   = input.color(color.blue, title="安値色") 
+volThresh  = input.float(1.5, title="出来高倍率", minval=1.0) 
+showVolHL  = input.bool(true, title="出来高HL表示") 
+maPeriod   = input.int(20, title="MA期間") 
+maType     = input.string("EMA", title="MA種類", options=["SMA","EMA"]) 
+pivotHigh = ta.highest(high, lookback) 
+pivotLow  = ta.lowest(low,  lookback) 
+if barstate.islastconfirmedhistory 
+    line.new(bar_index - lookback, pivotHigh, bar_index + 50, pivotHigh, 
+             color=highColor, width=lineWidth, style=line.style_dashed) 
+    label.new(bar_index, pivotHigh, "高値: " + str.tostring(pivotHigh, "#.###"), 
+              color=highColor, textcolor=color.white, 
+              style=label.style_label_left, size=size.small) 
+    line.new(bar_index - lookback, pivotLow, bar_index + 50, pivotLow, 
+             color=lowColor, width=lineWidth, style=line.style_dashed) 
+    label.new(bar_index, pivotLow, "安値: " + str.tostring(pivotLow, "#.###"), 
+              color=lowColor, textcolor=color.white, 
+              style=label.style_label_left, size=size.small) 
+avgVol    = ta.sma(volume, 20) 
+isHighVol = volume > avgVol * volThresh 
+if showVolHL and isHighVol 
+    bgcolor(color.new(color.orange, 85), title="高出来高HL") 
+© FX-YUNOSUKE
+maValue = maType == "EMA" ? ta.ema(close, maPeriod) : ta.sma(close, maPeriod) 
+plot(maValue, title="MA", color=color.yellow, linewidth=2) 
+plotshape(ta.crossover(close,  maValue), location=location.belowbar, 
+          style=shape.triangleup,   color=color.lime, size=size.small) 
