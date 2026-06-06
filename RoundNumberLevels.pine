@@ -1,0 +1,25 @@
+//@version=6
+indicator("Round Number Levels", overlay=true, max_bars_back=500, max_lines_count=500)
+
+stepSize = input.float(0.333, "Level Interval", step=0.001)
+levelsEachSide = input.int(20, "Levels Each Side", minval=1)
+lineColor = input.color(color.gray, "Line Color")
+lineWidth = input.int(1, "Line Width", minval=1, maxval=5)
+
+var line[] lines = array.new_line()
+
+if barstate.isfirst
+    for i = 0 to levelsEachSide * 2
+        price = (math.floor(close / stepSize) * stepSize) + ((i - levelsEachSide) * stepSize)
+        ln = line.new(bar_index, price, bar_index + 1, price, extend=extend.both, color=lineColor, width=lineWidth)
+        array.push(lines, ln)
+
+if barstate.islast
+    center = math.floor(close / stepSize) * stepSize
+    for i = 0 to array.size(lines) - 1
+        price = center + ((i - levelsEachSide) * stepSize)
+        ln = array.get(lines, i)
+        line.set_xy1(ln, bar_index, price)
+        line.set_xy2(ln, bar_index + 1, price)
+        line.set_color(ln, lineColor)
+        line.set_width(ln, lineWidth)
